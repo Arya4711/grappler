@@ -3,23 +3,25 @@
 
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 50
-#define GRAVITY 10
+#define GRAVITY 2
 
 Vector2 getDirection();
 void updatePos(Player*);
+void updateVelocityY(float*, bool);
 
 int main() {
 	static const int SCREEN_WIDTH = 800;
 	static const int SCREEN_HEIGHT = 800;
 	static const int FPS = 60;
-	static const char *GAME_TITLE = "Grappler";
-	static Player player = { { 250, 400, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 0 } };
+	static const char* GAME_TITLE = "Grappler";
+	static Player player = { { 250, 500, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 0 } };
 	static Rectangle floor = { 0, 500, 800, 500 };
 	
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE);
 	HideCursor();
 	SetTargetFPS(FPS);
 	while (!WindowShouldClose()) {
+		updateVelocityY(&player.velocity.y, CheckCollisionRecs(player.collider, floor));
 		updatePos(&player);
 		BeginDrawing();
 			ClearBackground(BLUE);
@@ -38,6 +40,14 @@ Vector2 getDirection() {
 	direction.x += IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
 
 	return direction;
+}
+
+void updateVelocityY(float* yVelocity, bool colliding) {
+	if (colliding) {
+		*yVelocity = 0;
+	}
+
+	*yVelocity *= GRAVITY;
 }
 
 void updatePos(Player* player) {
