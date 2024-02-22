@@ -1,4 +1,4 @@
 typedef struct Player {
 	Rectangle collider;
-	float velocity;
+	Vector2 velocity;
 } Player;
