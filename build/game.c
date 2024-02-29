@@ -3,26 +3,25 @@
 
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 50
-#define GRAVITY 2
+#define GRAVITY 50
 
-Vector2 getDirection();
-void updatePos(Player*);
-void updateVelocityY(float*, bool);
+int getDirectionX();
+void updatePos(Player*, Rectangle*);
+void updateVelocityY(Player*, bool);
 
 int main() {
 	static const int SCREEN_WIDTH = 800;
 	static const int SCREEN_HEIGHT = 800;
 	static const int FPS = 60;
 	static const char* GAME_TITLE = "Grappler";
-	static Player player = { { 250, 500, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 0 } };
-	static Rectangle floor = { 0, 500, 800, 500 };
+	static Player player = { { 250, 300, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 50 } };
+	static Rectangle floor = { 0, 500, 800, 300 };
 	
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE);
 	HideCursor();
 	SetTargetFPS(FPS);
 	while (!WindowShouldClose()) {
-		updateVelocityY(&player.velocity.y, CheckCollisionRecs(player.collider, floor));
-		updatePos(&player);
+		updatePos(&player, &floor);
 		BeginDrawing();
 			ClearBackground(BLUE);
 			DrawRectangleRec(floor, DARKGRAY);
@@ -33,26 +32,22 @@ int main() {
 	return 0;
 }
 
-Vector2 getDirection() {
-	Vector2 direction = { 0, 0 };
-
+int getDirectionX() {
 	// Bools are used as ints - if both keys are pressed they cancel each other out
-	direction.x += IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
-
-	return direction;
+	return IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
 }
 
-void updateVelocityY(float* yVelocity, bool colliding) {
+void updateVelocityY(Player* player, bool colliding) {
 	if (colliding) {
-		*yVelocity = 0;
+		player->velocity.y = 0;
 	}
 
-	*yVelocity *= GRAVITY;
+	player->velocity.y *= GRAVITY * GetFrameTime();
 }
 
-void updatePos(Player* player) {
-	Vector2 direction = getDirection();
-	float deltaTime = GetFrameTime();
-	player->collider.x += direction.x * player->velocity.x * deltaTime;
-	player->collider.y += direction.y * player->velocity.y * deltaTime;
+void updatePos(Player* player, Rectangle* toCollide) {
+	int directionX = getDirectionX();
+	updateVelocityY(player, CheckCollisionRecs(player->collider, *toCollide));
+	player->collider.x += directionX * player->velocity.x * GetFrameTime();
+	player->collider.y += player->velocity.y * GetFrameTime();
 }
