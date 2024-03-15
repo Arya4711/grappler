@@ -3,15 +3,17 @@
 
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 50
-#define GRAVITY 50
+#define GRAVITY 980
+#define MOVE_SPEED 200
+#define JUMP_FORCE 350
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 800
 
 int getDirectionX();
 void updatePos(Player*, Rectangle*);
-void updateVelocityY(Player*, bool);
+void updateVelocityY(Player*, Rectangle*);
 
 int main() {
-	static const int SCREEN_WIDTH = 800;
-	static const int SCREEN_HEIGHT = 800;
 	static const int FPS = 60;
 	static const char* GAME_TITLE = "Grappler";
 	static Player player = { { 250, 300, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 50 } };
@@ -37,17 +39,31 @@ int getDirectionX() {
 	return IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
 }
 
-void updateVelocityY(Player* player, bool colliding) {
-	if (colliding) {
-		player->velocity.y = 0;
+void updatePos(Player* player, Rectangle* toCollide) {
+	// Updating velocity
+	if (player->velocity.y != 0) {
+		player->velocity.y += GRAVITY * GetFrameTime();
 	}
 
-	player->velocity.y *= GRAVITY * GetFrameTime();
-}
+	// Jump logic
+	if (player->velocity.y == 0 && IsKeyPressed(KEY_SPACE)) {
+		player->velocity.y = -JUMP_FORCE;
+	}
 
-void updatePos(Player* player, Rectangle* toCollide) {
-	int directionX = getDirectionX();
-	updateVelocityY(player, CheckCollisionRecs(player->collider, *toCollide));
-	player->collider.x += directionX * player->velocity.x * GetFrameTime();
+	// Updating player position
+	player->collider.x += MOVE_SPEED * getDirectionX() * GetFrameTime();
 	player->collider.y += player->velocity.y * GetFrameTime();
+
+	// Checks if the player moved off the screen and moves the player back if so
+	if (player->collider.x + PLAYER_WIDTH > SCREEN_WIDTH) {
+		player->collider.x = SCREEN_WIDTH - PLAYER_WIDTH;
+	} else if (player->collider.x < 0) {
+		player->collider.x = 0;
+	}
+
+	// Checks if the player moved below the floor and moves the player back if so - also nulls velocity
+	if (player->collider.y + PLAYER_HEIGHT > toCollide->y) {
+		player->collider.y = toCollide->y - PLAYER_HEIGHT;
+		player->velocity.y = 0;
+	}
 }
