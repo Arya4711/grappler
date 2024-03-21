@@ -1,5 +1,0 @@
-﻿  game.c
-C:\Users\armlk\OneDrive\Documents\GitHub\grappler\raylib-master\src\external\rprand.h(205,27): warning C4018: '<': signed/unsigned mismatch
-  (compiling source file 'game.c')
-  
-  grappler.vcxproj -> C:\Users\armlk\OneDrive\Documents\GitHub\grappler\bin\Debug\grappler.exe
