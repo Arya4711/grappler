@@ -12,12 +12,18 @@
 int getDirectionX();
 void updatePos(Player*, Rectangle*);
 void updateVelocityY(Player*, Rectangle*);
+void addObstacle(Rectangle, Rectangle*);
 
 int main() {
 	static const int FPS = 60;
 	static const char* GAME_TITLE = "Grappler";
 	static Player player = { { 250, 300, PLAYER_WIDTH, PLAYER_HEIGHT }, { 0, 50 } };
+	Rectangle* obstacles = (Rectangle*)malloc(sizeof(Rectangle));
+	if (obstacles == NULL) {
+		printf("Memory allocation failed");
+	}
 	static Rectangle floor = { 0, 500, 800, 300 };
+	addObstacle(floor, obstacles);
 	
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE);
 	HideCursor();
@@ -26,10 +32,13 @@ int main() {
 		updatePos(&player, &floor);
 		BeginDrawing();
 			ClearBackground(BLUE);
-			DrawRectangleRec(floor, DARKGRAY);
+			for (int i = 0; i < sizeof(obstacles); i += sizeof(Rectangle)) {
+				DrawRectangleRec(obstacles[i], DARKGRAY);
+			}
 			DrawRectangleRec(player.collider, RED);
 		EndDrawing();
 	}
+	free(obstacles);
 	CloseWindow();
 	return 0;
 }
@@ -66,4 +75,16 @@ void updatePos(Player* player, Rectangle* toCollide) {
 		player->collider.y = toCollide->y - PLAYER_HEIGHT;
 		player->velocity.y = 0;
 	}
+}
+
+void addObstacle(Rectangle toAdd, Rectangle* obstacles) {
+	Rectangle* oldObstacles = obstacles;
+	Rectangle* newObstacles = (Rectangle*)realloc(obstacles, sizeof(obstacles) + sizeof(Rectangle));
+	if (newObstacles == NULL) {
+		printf("Memory reallocation failed");
+		return;
+	}
+
+	obstacles = newObstacles;
+	free(oldObstacles);
 }
